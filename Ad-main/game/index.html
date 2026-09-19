@@ -3942,6 +3942,195 @@
                 display: none !important;
             }
         }
+
+        /* Shop catalog: give narrow screens readable cards instead of squeezing a 3-column grid. */
+        #shop-all-grid .taming-card .shop-price-badge {
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            white-space: nowrap !important;
+        }
+
+        #shop-all-grid .taming-card .shop-price-icon {
+            width: 12px !important;
+            height: 12px !important;
+            min-width: 12px !important;
+            min-height: 12px !important;
+            max-width: 12px !important;
+            max-height: 12px !important;
+        }
+
+        #shop-all-grid .taming-card,
+        #shop-all-grid > div {
+            min-height: 142px !important;
+        }
+
+        @media (max-width: 600px) {
+            #shopModal .modal-header-bar {
+                gap: 5px !important;
+                flex-wrap: wrap !important;
+            }
+
+            #shopModal .modal-header-bar > .flex.items-center.gap-1\.5 {
+                order: 3 !important;
+                width: 100% !important;
+                justify-content: center !important;
+            }
+
+            #shopModal .modal-header-bar > .flex.items-center.gap-1\.5 .taming-tab {
+                flex: 1 1 0 !important;
+                min-width: 0 !important;
+                padding: 5px 4px !important;
+                font-size: 11px !important;
+                white-space: nowrap !important;
+            }
+
+            #shopModal .modal-header-bar > .flex.items-center.gap-2.ml-auto {
+                margin-left: auto !important;
+            }
+
+            #shopModal .diamond-pill {
+                min-height: 28px !important;
+                height: 28px !important;
+                padding: 2px 5px !important;
+                font-size: 11px !important;
+            }
+
+            #shopModal .diamond-pill-icon {
+                width: 17px !important;
+                height: 17px !important;
+            }
+
+            #shopModal .mt-2.flex,
+            #shopModal .mt-1.flex {
+                gap: 7px !important;
+            }
+
+            #shopModal .preview-star-pattern {
+                height: 60px !important;
+                min-height: 60px !important;
+            }
+
+            #shopModal .panel-inset.flex-1 {
+                padding: 7px !important;
+                min-height: 0 !important;
+            }
+
+            #shop-all-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 7px !important;
+                padding: 1px !important;
+            }
+
+            #shop-all-grid .taming-card,
+            #shop-all-grid > div {
+                min-width: 0 !important;
+                width: auto !important;
+                min-height: 132px !important;
+                padding: 7px 6px !important;
+                border-radius: 12px !important;
+                gap: 3px !important;
+                overflow: hidden !important;
+            }
+
+            #shop-all-grid .taming-card .w-14.h-14 {
+                width: 46px !important;
+                height: 46px !important;
+                min-width: 46px !important;
+                min-height: 46px !important;
+            }
+
+            #shop-all-grid .taming-card canvas,
+            #shop-all-grid .taming-card img {
+                width: 42px !important;
+                height: 42px !important;
+            }
+
+            #shop-all-grid .shop-item-name {
+                width: 100% !important;
+                min-height: 2.4em !important;
+                max-height: 2.4em !important;
+                font-size: 11px !important;
+                line-height: 1.2 !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                overflow-wrap: anywhere !important;
+            }
+
+            #shop-all-grid .taming-card > span:not(.shop-item-name) {
+                max-width: 100% !important;
+                font-size: 9px !important;
+                line-height: 1 !important;
+                white-space: nowrap !important;
+            }
+
+            #shop-all-grid .shop-item-price {
+                width: 100% !important;
+                min-height: 22px !important;
+                max-height: 22px !important;
+                margin-top: 1px !important;
+                overflow: hidden !important;
+                text-align: center !important;
+            }
+
+            #shop-all-grid .shop-item-price > span {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 3px !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+                font-size: 9px !important;
+                line-height: 1 !important;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+            }
+
+            #shop-all-grid .shop-price-badge {
+                flex: 0 0 auto !important;
+                gap: 2px !important;
+                height: 14px !important;
+                max-height: 14px !important;
+                align-items: center !important;
+                flex-wrap: nowrap !important;
+                white-space: nowrap !important;
+            }
+
+            #shop-all-grid .taming-card .shop-price-icon {
+                width: 13px !important;
+                height: 13px !important;
+                min-width: 13px !important;
+                min-height: 13px !important;
+                max-width: 13px !important;
+                max-height: 13px !important;
+            }
+
+            #shopModal .border-t-2 {
+                margin-top: 6px !important;
+                padding-top: 5px !important;
+            }
+        }
+
+        @media (max-width: 370px) and (orientation: portrait) {
+            #shopModal .modal-header-bar > .flex.items-center.gap-1\.5 .taming-tab {
+                font-size: 10px !important;
+                padding-left: 2px !important;
+                padding-right: 2px !important;
+            }
+
+            #shopModal .preview-star-pattern {
+                height: 56px !important;
+                min-height: 56px !important;
+            }
+
+            #shopModal #shop-preview-name {
+                max-width: 112px !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+                font-size: 14px !important;
+            }
+        }
     </style>
 </head>
 <body class="w-full h-full flex flex-col items-center justify-center relative select-none">
