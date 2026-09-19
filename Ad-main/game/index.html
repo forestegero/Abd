@@ -3943,6 +3943,84 @@
             }
         }
 
+        /* Collectible reward radar: shared notification language for every reward source. */
+        #reward-collectible-layer {
+            position: fixed;
+            top: max(72px, env(safe-area-inset-top, 72px));
+            right: max(12px, env(safe-area-inset-right, 12px));
+            z-index: 80;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 7px;
+            pointer-events: none;
+        }
+        .reward-collectible-alert {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 34px;
+            max-width: min(210px, 58vw);
+            padding: 6px 10px 6px 8px;
+            border: 2px solid #ffd54f;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(57, 28, 8, .96), rgba(126, 65, 12, .96));
+            color: #fff7d0;
+            box-shadow: 0 4px 0 #3c1e08, 0 0 18px rgba(255, 213, 79, .42);
+            font: 900 10px/1 'Lilita One', cursive;
+            cursor: pointer;
+            pointer-events: auto;
+            animation: rewardAlertIn .35s cubic-bezier(.2, 1.4, .4, 1), rewardAlertPulse 1.8s ease-in-out infinite;
+        }
+        .reward-collectible-alert:hover { filter: brightness(1.12); transform: translateY(-1px); }
+        .reward-collectible-alert .reward-alert-icon { font-size: 17px; color: #ffe27a; }
+        .reward-collectible-alert .reward-alert-mark {
+            position: absolute;
+            top: -9px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            display: grid;
+            place-items: center;
+            border: 2px solid #fff7d0;
+            border-radius: 50%;
+            background: #e33a2f;
+            color: #fff;
+            font: 900 14px/1 Arial, sans-serif;
+            animation: rewardAlertMark 1s ease-in-out infinite;
+        }
+        .reward-finger-hint {
+            position: fixed;
+            z-index: 130;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: min(240px, 72vw);
+            padding: 7px 10px;
+            border: 2px solid #ffe27a;
+            border-radius: 12px;
+            background: rgba(29, 14, 5, .96);
+            color: #fff7d0;
+            box-shadow: 0 0 22px rgba(255, 213, 79, .45), 0 4px 0 #3c1e08;
+            font: 900 11px/1.15 'Lilita One', cursive;
+            pointer-events: none;
+            animation: rewardFingerIn .3s ease-out, rewardFingerFloat 1s ease-in-out infinite alternate;
+        }
+        .reward-finger-hint::before { content: '☝'; font-size: 25px; color: #ffe27a; }
+        .reward-claim-focus { position: relative !important; z-index: 132 !important; animation: rewardClaimFocus .8s ease-in-out infinite alternate !important; }
+        @keyframes rewardAlertIn { from { opacity: 0; transform: translateX(24px) scale(.8); } to { opacity: 1; transform: translateX(0) scale(1); } }
+        @keyframes rewardAlertPulse { 0%, 100% { box-shadow: 0 4px 0 #3c1e08, 0 0 12px rgba(255, 213, 79, .28); } 50% { box-shadow: 0 4px 0 #3c1e08, 0 0 24px rgba(255, 213, 79, .7); } }
+        @keyframes rewardAlertMark { 0%, 100% { transform: scale(1) rotate(-8deg); } 50% { transform: scale(1.18) rotate(8deg); } }
+        @keyframes rewardFingerIn { from { opacity: 0; transform: translateY(8px) scale(.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes rewardFingerFloat { from { margin-top: 0; } to { margin-top: 6px; } }
+        @keyframes rewardClaimFocus { from { filter: brightness(1); transform: scale(1); } to { filter: brightness(1.3); transform: scale(1.04); } }
+        @media (max-width: 600px) {
+            #reward-collectible-layer { top: 64px; right: 8px; gap: 5px; }
+            .reward-collectible-alert { min-height: 30px; padding: 5px 8px 5px 6px; font-size: 9px; }
+            .reward-collectible-alert .reward-alert-icon { font-size: 15px; }
+        }
+
         /* Shop catalog: give narrow screens readable cards instead of squeezing a 3-column grid. */
         #shop-all-grid .taming-card .shop-price-badge {
             flex-wrap: nowrap !important;
@@ -4138,6 +4216,7 @@
     <!-- Arka Plan Canvas -->
     <canvas id="bgCanvas"></canvas>
     <div id="toast-container"></div>
+    <div id="reward-collectible-layer" aria-live="polite" aria-label="Toplanabilir ödüller"></div>
 
     <!-- ================= ÜST HEADER ================= -->
     <header class="fixed top-2 left-1/2 -translate-x-1/2 w-[calc(100%-12px)] max-w-[1440px] flex justify-between items-start z-30 pointer-events-none">
@@ -6780,6 +6859,7 @@
                 playSfx('buy');
                 updateHeaderProfile(_authUser);
                 updateLevelRewardsPanel();
+                refreshRewardCollectibles();
             } catch (error) {
                 triggerToast('Seviye ödülü alınamadı.', 'fa-triangle-exclamation');
             }
@@ -7032,6 +7112,7 @@
                 updateDailyRewardPanel();
                 triggerToast(`Günlük ödül alındı: +${data.reward.toLocaleString()} altın!`, 'fa-gift');
                 playSfx('buy');
+                refreshRewardCollectibles();
             } catch (error) {
                 triggerToast('Sunucuya ulaşılamadı; ödül verilmedi.', 'fa-triangle-exclamation');
             } finally {
@@ -8234,7 +8315,121 @@
 
         function awardChallengeProgress(id, amount = 1) {
             updateChallengeProgress();
+            refreshRewardCollectibles();
         }
+
+        let _rewardCollectibleTimer = null;
+        let _rewardFingerTimer = null;
+        let _rewardCollectibleItems = [];
+
+        function rewardRequestHeaders() {
+            return _authToken ? { 'Authorization': 'Bearer ' + _authToken } : {};
+        }
+
+        function hideRewardFingerHint() {
+            if (_rewardFingerTimer) clearTimeout(_rewardFingerTimer);
+            document.querySelectorAll('.reward-finger-hint').forEach(node => node.remove());
+        }
+
+        function showRewardFingerHint(selector, text = 'Parmağınla TOPLA düğmesine dokun') {
+            hideRewardFingerHint();
+            const target = document.querySelector(selector);
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.classList.add('reward-claim-focus');
+            const rect = target.getBoundingClientRect();
+            const hint = document.createElement('div');
+            hint.className = 'reward-finger-hint';
+            hint.textContent = text;
+            hint.style.left = `${Math.max(8, Math.min(window.innerWidth - 248, rect.left))}px`;
+            hint.style.top = `${Math.max(8, rect.top - 54)}px`;
+            document.body.appendChild(hint);
+            _rewardFingerTimer = setTimeout(() => {
+                hint.remove();
+                target.classList.remove('reward-claim-focus');
+            }, 6000);
+        }
+
+        function renderRewardCollectibles(items) {
+            const layer = document.getElementById('reward-collectible-layer');
+            if (!layer) return;
+            _rewardCollectibleItems = items;
+            layer.innerHTML = items.map(item => `<button type="button" class="reward-collectible-alert" data-reward-kind="${item.kind}" aria-label="${item.label} toplanabilir">
+                <span class="reward-alert-icon">${item.icon}</span><span>${item.label}</span><b class="reward-alert-mark">!</b>
+            </button>`).join('');
+            layer.querySelectorAll('.reward-collectible-alert').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = _rewardCollectibleItems.find(entry => entry.kind === button.dataset.rewardKind);
+                    if (item?.open) item.open();
+                });
+            });
+        }
+
+        function mergeGuestRewardProgress(tasks = []) {
+            let localProgress = {};
+            try { localProgress = JSON.parse(localStorage.getItem('fb_quest_prog') || '{}'); } catch (_) {}
+            return tasks.map(task => ({ ...task, progress: Math.max(Number(task.progress || 0), Math.min(Number(task.target || 0), Number(localProgress[task.key] || 0))) }));
+        }
+
+        async function refreshRewardCollectibles() {
+            const next = [];
+            try {
+                const questsResponse = await fetch('/api/quests/list', { headers: rewardRequestHeaders(), cache: 'no-store' });
+                const questData = await questsResponse.json().catch(() => ({}));
+                const dailyTasks = _authToken ? (questData.quests || []) : mergeGuestRewardProgress(questData.quests || []);
+                const ultraTasks = _authToken ? (questData.ultraQuests || []) : mergeGuestRewardProgress(questData.ultraQuests || []);
+                if (dailyTasks.some(task => !task.claimed && Number(task.progress || 0) >= Number(task.target || 1))) {
+                    next.push({ kind: 'daily-quest', icon: '🎯', label: 'Günlük görev ödülü hazır', open: () => { openModal('challengesModal'); setChallengeTab('daily'); updateChallengeProgress().then(() => showRewardFingerHint('#challenge-list .btn-3d')); } });
+                }
+                if (ultraTasks.some(task => !task.claimed && Number(task.progress || 0) >= Number(task.target || 1))) {
+                    next.push({ kind: 'ultra-quest', icon: '🏆', label: 'Uzun vadeli ödül hazır', open: () => { openModal('challengesModal'); setChallengeTab('ultra'); updateChallengeProgress().then(() => showRewardFingerHint('#challenge-list .btn-3d')); } });
+                }
+            } catch (_) {}
+
+            try {
+                const dailyResponse = await fetch('/api/daily-reward', { headers: rewardRequestHeaders(), cache: 'no-store' });
+                const daily = await dailyResponse.json().catch(() => ({}));
+                if ((dailyResponse.ok && !daily.claimedToday) || (!_authToken && getDailyRewardState().claimedDate !== getDailyRewardDate())) {
+                    next.push({ kind: 'daily-reward', icon: '🎁', label: 'Günlük ödülünü topla', open: () => { openModal('dailyRewardModal'); updateDailyRewardPanel(); setTimeout(() => showRewardFingerHint('#daily-reward-claim'), 180); } });
+                }
+            } catch (_) {}
+
+            if (_authToken) {
+                try {
+                    const profileResponse = await fetch('/api/profile', { headers: rewardRequestHeaders(), cache: 'no-store' });
+                    const profile = await profileResponse.json().catch(() => ({}));
+                    const user = profile.user;
+                    if (user) {
+                        const xp = Number(user.xp || 0);
+                        const claimed = new Set((user.claimedLevelRewards || []).map(Number));
+                        const levelReady = RANK_XP_THRESHOLDS.some((threshold, index) => xp >= threshold && !claimed.has(index + 1));
+                        if (levelReady) next.push({ kind: 'level-reward', icon: '⭐', label: 'Seviye ödülü hazır', open: () => { openModal('levelRewardsModal'); updateLevelRewardsPanel().then(() => setTimeout(() => showRewardFingerHint('#level-reward-list button'), 180)); } });
+                    }
+                } catch (_) {}
+
+                try {
+                    const inviteResponse = await fetch('/api/invite-event/state', { headers: rewardRequestHeaders(), cache: 'no-store' });
+                    const invite = await inviteResponse.json().catch(() => ({}));
+                    const friendsDone = (invite.friends || []).filter(friend => friend.completed).length;
+                    const claimed = invite.claimedMilestones || [];
+                    if (friendsDone > claimed.filter(Boolean).length) next.push({ kind: 'invite-reward', icon: '🔥', label: 'Davet ödülü hazır', open: () => { openModal('friendInviteModal'); updateFriendInviteModal(); setTimeout(() => showRewardFingerHint('#friendInviteModal button'), 180); } });
+                } catch (_) {}
+
+                try {
+                    const creatorResponse = await fetch('/api/creator-event/state', { headers: rewardRequestHeaders(), cache: 'no-store' });
+                    const creator = await creatorResponse.json().catch(() => ({}));
+                    const approved = (creator.submissions || []).filter(entry => entry.status === 'approved');
+                    const views = approved.reduce((sum, entry) => sum + (Number(entry.estimatedViews) || 1000), 0);
+                    const requirements = [1000, 10000, 50000, 200000];
+                    const claimed = creator.claimedTiers || [];
+                    if (requirements.some((required, index) => !claimed[index] && (views >= required || approved.length >= index + 1))) next.push({ kind: 'creator-reward', icon: '🎬', label: 'İçerik üretici ödülü hazır', open: () => { openModal('creatorEventModal'); openCreatorEventModal(); setTimeout(() => showRewardFingerHint('#creatorEventModal button'), 180); } });
+                } catch (_) {}
+            }
+            renderRewardCollectibles(next);
+        }
+
+        setTimeout(refreshRewardCollectibles, 900);
+        _rewardCollectibleTimer = setInterval(refreshRewardCollectibles, 12000);
 
         /* ════════════════════════════════════════════════════════════════
            10. LEADERBOARD (TAMING.IO SCREENSHOT 4 BİREBİR ARAMA & SAYFALAMA)
