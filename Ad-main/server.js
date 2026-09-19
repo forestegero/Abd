@@ -2891,13 +2891,13 @@ const server = http.createServer((request, response) => {
 function serveStatic(request, response, requestPath) {
   const normalized = String(requestPath || '/').trim();
 
-  if (normalized === '/admin' || normalized === '/admin/') {
+  if (normalized === '/admin' || normalized === '/admin/' || normalized === '/game/admin' || normalized === '/game/admin/') {
     response.writeHead(302, { Location: '/admin.html' });
     response.end();
     return;
   }
 
-  if (normalized === '/admin.html') {
+  if (normalized === '/admin.html' || normalized === '/game/admin.html') {
     requestPath = '/admin/index.html';
   }
   else if (normalized === '/admin.css') {
