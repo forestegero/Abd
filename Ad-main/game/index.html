@@ -3696,6 +3696,225 @@
                 min-height: 42px;
             }
         }
+
+        /* Final compact pass: keep the top HUD inside narrow phone viewports. */
+        @media (max-width: 768px) {
+            header {
+                overflow: hidden !important;
+            }
+
+            #header-left-bar {
+                width: 100% !important;
+                min-width: 0 !important;
+                gap: 3px !important;
+                flex-wrap: nowrap !important;
+            }
+
+            #header-settings-section {
+                flex: 0 0 auto !important;
+                gap: 2px !important;
+            }
+
+            #header-settings-section button {
+                width: 27px !important;
+                min-width: 27px !important;
+                padding: 3px !important;
+            }
+
+            #header-guest-view:not(.hidden),
+            #header-user-view:not(.hidden) {
+                flex: 1 1 auto !important;
+                width: auto !important;
+                min-width: 0 !important;
+                margin-left: 0 !important;
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) auto auto auto;
+                gap: 3px !important;
+                overflow: hidden !important;
+            }
+
+            #header-guest-view > *,
+            #header-user-view > * {
+                min-width: 0 !important;
+                max-width: 100% !important;
+            }
+
+            #header-guest-view > button:first-child {
+                padding: 3px 4px !important;
+                gap: 2px !important;
+                min-width: 0 !important;
+            }
+
+            #header-guest-view > button:first-child i {
+                font-size: 11px !important;
+            }
+
+            #header-guest-view > button:first-child span:first-child {
+                font-size: 8px !important;
+            }
+
+            #header-guest-view > button:first-child span:last-child {
+                font-size: 7px !important;
+            }
+
+            #header-guest-view > button:nth-child(2) {
+                padding: 3px 5px !important;
+                font-size: 10px !important;
+            }
+
+            .gold-balance-pill,
+            .diamond-pill {
+                min-height: 29px !important;
+                height: 29px !important;
+                gap: 3px !important;
+                padding: 2px 3px 2px 4px !important;
+                border-width: 1.5px !important;
+                border-radius: 9px !important;
+                font-size: 11px !important;
+            }
+
+            .gold-balance-icon,
+            .diamond-pill-icon {
+                width: 16px !important;
+                height: 16px !important;
+            }
+
+            .gold-balance-value,
+            .diamond-pill-value {
+                min-width: 1.2rem !important;
+                letter-spacing: 0 !important;
+                font-size: 10px !important;
+            }
+
+            .diamond-plus-btn {
+                width: 18px !important;
+                height: 18px !important;
+                border-radius: 6px !important;
+                font-size: 13px !important;
+            }
+
+            #header-user-view .gold-balance-pill,
+            #header-user-view .diamond-pill {
+                flex: 0 0 auto !important;
+            }
+
+            #main-menu {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding-bottom: 76px !important;
+            }
+        }
+
+        @media (max-width: 420px) and (orientation: portrait) {
+            #header-guest-view > button:first-child span:last-child {
+                display: none !important;
+            }
+
+            #header-guest-view > button:first-child {
+                min-width: 58px !important;
+            }
+
+            #header-guest-view > button:nth-child(2) {
+                min-width: 48px !important;
+            }
+
+            .gold-balance-pill,
+            .diamond-pill {
+                padding-left: 3px !important;
+                padding-right: 2px !important;
+            }
+
+            .diamond-plus-btn {
+                width: 17px !important;
+                height: 17px !important;
+            }
+
+            #main-menu {
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                justify-content: flex-start !important;
+                padding-top: 58px !important;
+                padding-bottom: 82px !important;
+                scrollbar-width: none !important;
+            }
+
+            #main-menu::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            #main-menu > .relative:first-child {
+                margin-bottom: 4px !important;
+            }
+
+            #name-input {
+                height: 42px !important;
+                min-height: 42px !important;
+                margin-bottom: 7px !important;
+            }
+
+            #active-pet-btn {
+                height: 64px !important;
+                min-height: 64px !important;
+                margin-bottom: 7px !important;
+            }
+
+            #active-pet-btn > div:first-child {
+                width: 50px !important;
+                height: 50px !important;
+            }
+
+            #play-btn {
+                height: 60px !important;
+                min-height: 60px !important;
+            }
+
+            #action-buttons-grid {
+                margin-top: 6px !important;
+                margin-bottom: 7px !important;
+            }
+
+            #action-buttons-grid button {
+                height: 46px !important;
+                min-height: 46px !important;
+                font-size: 13px !important;
+            }
+
+            .mobile-portrait-stream {
+                gap: 6px !important;
+                margin-bottom: 7px !important;
+            }
+
+            .mobile-portrait-stream .invite-banner-card,
+            .mobile-portrait-stream .creator-banner-card {
+                min-height: 56px !important;
+                padding: 6px 8px !important;
+            }
+
+            .mobile-portrait-stream .invite-banner-card > div > div:first-child,
+            .mobile-portrait-stream .creator-banner-card > div > div:first-child {
+                width: 36px !important;
+                height: 36px !important;
+            }
+
+            #main-menu > div.w-full.mt-1.mb-3,
+            #main-menu > div.w-full.mt-3.mb-3 {
+                margin-top: 5px !important;
+                margin-bottom: 5px !important;
+            }
+
+            #home-leaderboard-list {
+                max-height: 88px !important;
+                overflow: hidden !important;
+            }
+
+            #main-menu > div.flex.flex-col.items-center.gap-2\.5 {
+                margin-top: 8px !important;
+                padding-bottom: 0 !important;
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="w-full h-full flex flex-col items-center justify-center relative select-none">
