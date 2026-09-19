@@ -4079,6 +4079,25 @@ function applyBotSpikeDamage(bot, spike, now) {
   return applySpikeDamageToTarget(bot, spike, now);
 }
 
+function triggerSpikeContacts(spike, now = Date.now()) {
+  if (!spike || Number(spike.type) !== 3 || (spike.hp ?? 0) <= 0) return;
+  const spikeRadius = Number(spike.radius) || 34;
+  for (const target of players.values()) {
+    if (!target || (target.hp ?? 0) <= 0 || target.id === spike.ownerId) continue;
+    const targetRadius = Number(target.radius) || 35;
+    const distance = Math.hypot((Number(target.x) || 0) - Number(spike.x), (Number(target.y) || 0) - Number(spike.y));
+    if (distance <= targetRadius + spikeRadius) applySpikeDamageToTarget(target, spike, now);
+  }
+  const owner = players.get(spike.ownerId);
+  if (!owner) return;
+  for (const mob of mobs.values()) {
+    if (!mob || (mob.hp ?? 0) <= 0) continue;
+    const mobRadius = Number(mob.radius) || 36;
+    const distance = Math.hypot((Number(mob.x) || 0) - Number(spike.x), (Number(mob.y) || 0) - Number(spike.y));
+    if (distance <= mobRadius + spikeRadius) applySpikeDamageToMob(mob, spike, owner, now);
+  }
+}
+
 function applySpikeDamageToMob(mob, spike, attacker, now = Date.now()) {
   if (!mob || mob.hp <= 0 || !spike || Number(spike.type) !== 3 || (spike.hp ?? 0) <= 0 || !attacker) return false;
   const hitKey = `spike:${spike.id}:${mob.id}`;
@@ -6220,21 +6239,20 @@ io.on('connection', (socket) => {
     resolveTrapOwnerCollisions(player);
 
     // Advanced Networked Physics: 2-pass solid penetration resolution & velocity sliding
-    if (!player.trappedBy) {
-      const pRad = Number(player.radius) || 35;
-      const initialColX = player.x;
-      const initialColY = player.y;
-
-      // Authoritative Spike Damage Check for Moving Player
-      const now = Date.now();
-      for (const b of nearbyBuildings(player.x, player.y, pRad + 50)) {
-        if (b.type === 3 && (b.hp ?? 0) > 0 && b.ownerId !== player.id) {
-          const sDist = Math.hypot(player.x - b.x, player.y - b.y);
-          if (sDist <= pRad + (Number(b.radius) || 34)) {
-            applySpikeDamageToTarget(player, b, now);
-          }
-        }
+    const pRad = Number(player.radius) || 35;
+    const initialColX = player.x;
+    const initialColY = player.y;
+    // Check spike contact for every player, including trapped players. A stationary
+    // target must not need a movement or push event to take damage.
+    const now = Date.now();
+    for (const b of nearbyBuildings(player.x, player.y, pRad + 50)) {
+      if (b.type === 3 && (b.hp ?? 0) > 0 && b.ownerId !== player.id) {
+        const sDist = Math.hypot(player.x - b.x, player.y - b.y);
+        if (sDist <= pRad + (Number(b.radius) || 34)) applySpikeDamageToTarget(player, b, now);
       }
+    }
+
+    if (!player.trappedBy) {
 
       for (let pass = 0; pass < 2; pass++) {
         // 1. Solid Buildings & Traps (Static, invMass = 0)
@@ -6499,10 +6517,11 @@ io.on('connection', (socket) => {
   socket.on('spike_hit', (data = {}) => {
     if (socketEventRateLimited(socket, 'spike_hit')) return;
     if (!pvpAllowed()) return;
+    const attacker = players.get(socket.id);
     const target = players.get(data.targetId);
     const spikeId = String(data.bId || data.buildingId || '');
     const spike = buildings.get(spikeId);
-    if (!target || (target.hp ?? 0) <= 0 || !spike || Number(spike.type) !== 3 || (spike.hp ?? 0) <= 0) return;
+    if (!attacker || !target || (target.hp ?? 0) <= 0 || !spike || Number(spike.type) !== 3 || (spike.hp ?? 0) <= 0) return;
     // Allow either the spike owner OR the victim to notify server.
     // Validate against the actual spike building position so remote hits still work.
     if (spike.ownerId !== socket.id && target.id !== socket.id) return;
@@ -6909,6 +6928,7 @@ io.on('connection', (socket) => {
     else buildingGrid.set(cellKey, [building]);
     socket.emit('self_state', { g: owner.gold, wood: owner.wood, stone: owner.stone, apples: owner.apples });
     socket.emit('build_ack', { clientId: data.id, serverId: id });
+    triggerSpikeContacts(building, now);
     broadcastPlayerEventNear(owner, 'player_attack', {
       id: socket.id,
       weapon: bType,
