@@ -21928,13 +21928,19 @@ function initMultiplayer() {
 
     const fxX = typeof resX === 'number' ? resX : player.x;
     const fxY = typeof resY === 'number' ? resY - 35 : player.y - 40;
+
+    // Resources are intentionally infinite on the server, so quest progress must
+    // follow each reward instead of waiting for a destruction event.
+    if (gainedWood > 0 && window._updateQuestProgress) window._updateQuestProgress('wood', gainedWood);
+    if (gainedStone > 0 && window._updateQuestProgress) window._updateQuestProgress('stone', gainedStone);
+    if (gainedGold > 0 && window._updateQuestProgress) window._updateQuestProgress('gold', gainedGold);
     
     // Only show destruction celebration text and bonuses if resource broke
     if (destroyed) {
       const ftParts = [];
-      if (gainedWood > 0) { ftParts.push(`+${gainedWood}🪵`); _trackMission('m2', gainedWood); if (window._updateQuestProgress) window._updateQuestProgress('wood', gainedWood); }
-      if (gainedStone > 0) { ftParts.push(`+${gainedStone}🪨`); if (window._updateQuestProgress) window._updateQuestProgress('stone', gainedStone); }
-      if (gainedGold > 0) { ftParts.push(`+${gainedGold}💰`); if (window._updateQuestProgress) window._updateQuestProgress('gold', gainedGold); }
+      if (gainedWood > 0) { ftParts.push(`+${gainedWood}🪵`); _trackMission('m2', gainedWood); }
+      if (gainedStone > 0) { ftParts.push(`+${gainedStone}🪨`); }
+      if (gainedGold > 0) { ftParts.push(`+${gainedGold}💰`); }
       if (gainedApples > 0) { ftParts.push(`+${gainedApples}🍎`); }
       ftParts.push('💥 KIRILDI!');
       floatingTexts.push({

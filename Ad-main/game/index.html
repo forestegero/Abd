@@ -8101,6 +8101,18 @@
                     _authUser = data.user;
                     localStorage.setItem('fb_auth_user', JSON.stringify(data.user));
                 }
+                if (!_authToken) {
+                    let localProgress = {};
+                    try { localProgress = JSON.parse(localStorage.getItem('fb_quest_prog') || '{}'); } catch (_) {}
+                    const mergeLocalProgress = (tasks = []) => tasks.map(task => {
+                        const localValue = Math.max(0, Number(localProgress[task.key] || 0));
+                        return localValue > Number(task.progress || 0)
+                            ? { ...task, progress: Math.min(Number(task.target || 0), localValue) }
+                            : task;
+                    });
+                    data.quests = mergeLocalProgress(data.quests);
+                    data.ultraQuests = mergeLocalProgress(data.ultraQuests);
+                }
                 startDailyQuestCountdown();
                 const activeQuests = _challengeTab === 'ultra' ? (data.ultraQuests || []) : data.quests;
                 list.innerHTML = activeQuests.map(q => {
