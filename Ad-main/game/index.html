@@ -273,8 +273,10 @@
         .gold-balance-icon {
             width: 18px;
             height: 18px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 10px rgba(255, 203, 70, .7));
+            display: inline-grid;
+            place-items: center;
+            color: #ffd54f;
+            filter: drop-shadow(0 0 7px rgba(255, 203, 70, .7));
             flex-shrink: 0;
         }
         .gold-balance-value {
@@ -3829,6 +3831,31 @@
                 height: 17px !important;
             }
 
+            .creator-banner-card:not(#creator-widget-card) > div:nth-child(2) > div:nth-child(2) {
+                flex: 1 1 auto !important;
+                width: auto !important;
+                min-width: 0 !important;
+            }
+
+            .creator-banner-card:not(#creator-widget-card) > div:nth-child(2) {
+                flex: 1 1 auto !important;
+                width: auto !important;
+                min-width: 0 !important;
+            }
+
+            .creator-banner-card:not(#creator-widget-card) > div:nth-child(2) > div:nth-child(2) > div:first-child {
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            .creator-banner-card:not(#creator-widget-card) > div:nth-child(2) > div:nth-child(2) > span:last-child {
+                display: block !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+            }
+
             #main-menu {
                 height: 100dvh !important;
                 max-height: 100dvh !important;
@@ -3942,7 +3969,7 @@
                     LOGIN
                 </button>
                 <div class="gold-balance-pill" title="Güncel gold bakiyesi">
-                    <img class="gold-balance-icon" src="asset/gold.png" alt="Gold">
+                    <i class="fa-solid fa-coins gold-balance-icon" aria-label="Gold"></i>
                     <span id="header-gold-guest" class="gold-balance-value">0</span>
                 </div>
                 <div class="diamond-pill" title="Diamond bakiyen">
@@ -3977,7 +4004,7 @@
                     </div>
                 </div>
                 <div class="gold-balance-pill" title="Güncel gold bakiyesi">
-                    <img class="gold-balance-icon" src="asset/gold.png" alt="Gold">
+                    <i class="fa-solid fa-coins gold-balance-icon" aria-label="Gold"></i>
                     <span id="header-gold" class="gold-balance-value">1,500</span>
                 </div>
                 <div id="header-diamond-pill" class="diamond-pill" title="Diamond bakiyen">
