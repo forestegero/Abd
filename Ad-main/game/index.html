@@ -5101,7 +5101,10 @@
                 <div class="panel-inset p-3 flex flex-col gap-2 border-[2px] border-cyan-300/20">
                     <div class="diamond-balance-strip">
                         <span class="font-io text-sm text-white">Kaç diamond alacaksın?</span>
-                        <span class="text-[10px] text-white/50 font-bold">Bakiye: <b id="diamond-modal-balance" class="text-cyan-200">0</b></span>
+                        <span class="text-[10px] text-white/50 font-bold text-right">
+                            Diamond: <b id="diamond-modal-balance" class="text-cyan-200">0</b>
+                            <span class="block mt-0.5 text-[#ffe27a]">Altın: <b id="diamond-modal-gold">0</b> <i class="fa-solid fa-coins text-[#ffd54f]" aria-label="Altın"></i></span>
+                        </span>
                     </div>
                     <div class="diamond-buy-summary">
                         <input id="diamond-buy-amount" class="diamond-buy-amount" type="number" min="1" max="1000" value="1" inputmode="numeric" oninput="updateDiamondPurchaseTotal()" aria-label="Diamond miktarı">
@@ -5897,8 +5900,9 @@
         }
         const DIAMOND_PRICE = 10000;
         function getPlayerDiamonds() {
-            if (_authUser) return Math.max(0, Number(_authUser.diamonds) || 0);
-            return 0;
+            const serverValue = Number(_authUser?.diamonds);
+            if (Number.isFinite(serverValue)) return Math.max(0, serverValue);
+            return Math.max(0, Number(localStorage.getItem('fb_diamonds') || 0) || 0);
         }
         function setPlayerDiamonds(value) {
             const diamonds = Math.max(0, Math.floor(Number(value) || 0));
@@ -5912,13 +5916,48 @@
                 const element = document.getElementById(id);
                 if (element) element.textContent = diamonds.toLocaleString('tr-TR');
             });
+            const goldElement = document.getElementById('diamond-modal-gold');
+            if (goldElement) goldElement.textContent = getPlayerGold().toLocaleString('tr-TR');
         }
-        function openDiamondPurchaseModal() {
+        async function syncEconomyFromServer() {
+            if (!_authToken) _authToken = localStorage.getItem('fb_auth_token') || null;
+            if (!_authUser) {
+                try { _authUser = JSON.parse(localStorage.getItem('fb_auth_user') || 'null'); } catch (_) { _authUser = null; }
+            }
+            if (!_authToken) {
+                updateGoldDisplays();
+                return false;
+            }
+            try {
+                const response = await fetch('/api/auth/me', {
+                    cache: 'no-store',
+                    headers: { 'Authorization': 'Bearer ' + _authToken }
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.user) throw new Error(data.error || 'Oturum bilgisi alınamadı.');
+                _authUser = data.user;
+                _currentUser = data.user;
+                localStorage.setItem('fb_auth_user', JSON.stringify(data.user));
+                if (data.user.coins !== undefined) setPlayerGold(data.user.coins);
+                if (data.user.diamonds !== undefined) setPlayerDiamonds(data.user.diamonds);
+                return true;
+            } catch (_) {
+                updateGoldDisplays();
+                return false;
+            }
+        }
+        async function openDiamondPurchaseModal() {
             openModal('diamondPurchaseModal');
             updateDiamondDisplays();
             updateDiamondPurchaseTotal();
             const note = document.getElementById('diamond-purchase-note');
-            if (note) note.textContent = _authToken ? 'Hesabındaki coin ile güvenli satın alma.' : 'Satın almak için önce giriş yapmalısın.';
+            if (!_authToken) {
+                if (note) note.textContent = 'Satın almak için önce giriş yapmalısın.';
+                return;
+            }
+            if (note) note.textContent = 'Bakiye güncelleniyor...';
+            const synced = await syncEconomyFromServer();
+            if (note) note.textContent = synced ? 'Hesabındaki altın ile güvenli satın alma.' : 'Bakiye güncellenemedi. Tekrar dene.';
         }
         function updateDiamondPurchaseTotal() {
             const input = document.getElementById('diamond-buy-amount');
@@ -5929,10 +5968,18 @@
             total.textContent = (amount * DIAMOND_PRICE).toLocaleString('tr-TR');
         }
         async function buyDiamonds() {
+            if (!_authToken) _authToken = localStorage.getItem('fb_auth_token') || null;
             if (!_authToken) {
                 closeAllModals();
                 openModal('loginModal');
                 triggerToast('Diamond almak için önce giriş yapmalısın.', 'fa-lock');
+                return;
+            }
+            const synced = await syncEconomyFromServer();
+            if (!synced) {
+                const note = document.getElementById('diamond-purchase-note');
+                if (note) note.textContent = 'Bakiye alınamadı. Lütfen tekrar dene.';
+                triggerToast('Hesap bakiyesi alınamadı.', 'fa-triangle-exclamation');
                 return;
             }
             const input = document.getElementById('diamond-buy-amount');
@@ -5957,7 +6004,8 @@
                     localStorage.setItem('fb_auth_user', JSON.stringify(data.user));
                 }
                 if (typeof data.newCoins === 'number') setPlayerGold(data.newCoins);
-                setPlayerDiamonds(data.diamonds);
+                setPlayerDiamonds(typeof data.diamonds === 'number' ? data.diamonds : data.user?.diamonds);
+                updateDiamondDisplays();
                 if (note) note.textContent = `${amount.toLocaleString('tr-TR')} diamond hesabına eklendi.`;
                 triggerToast(`💎 +${amount.toLocaleString('tr-TR')} diamond satın alındı!`, 'fa-gem');
                 playSfx('buy');

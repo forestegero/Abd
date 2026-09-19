@@ -2788,12 +2788,15 @@ async function handleApi(request, response, requestPath) {
     user.coins -= totalCost;
     user.gold = user.coins;
     user.diamonds = Math.max(0, Number(user.diamonds) || 0) + amount;
-    saveAccountData(true);
+    await saveAccountData(true);
     sendJson(response, 200, {
       success: true,
       amount,
       cost: totalCost,
       newCoins: user.coins,
+      newGold: user.coins,
+      gold: user.coins,
+      newDiamonds: user.diamonds,
       diamonds: user.diamonds,
       user: publicUser(user)
     });
